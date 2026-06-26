@@ -1,0 +1,60 @@
+.welcome-banner {
+    background: #1877F2;
+    border-radius: 8px;
+    padding: 20px 24px;
+    color: #fff;
+}
+
+.quick-action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px 16px;
+    min-height: 126px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #DADDE1;
+    text-decoration: none;
+    color: #050505;
+    text-align: center;
+    transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+
+.quick-action-card:hover {
+    border-color: #1877F2;
+    background: #E7F3FF;
+    color: #1877F2;
+}
+
+.qa-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.qa-icon.primary { background: #E7F3FF; color: #1877F2; }
+.qa-icon.success { background: #e6f4e1; color: #42b72a; }
+.qa-icon.warning { background: #fff3e0; color: #e8a000; }
+.qa-icon.danger  { background: #fde8ec; color: #e41e3f; }
+
+.qa-label { font-size: 0.83rem; font-weight: 600; }
+
+.dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.dot-created   { background: #1877F2; }
+.dot-progress  { background: #e8a000; }
+.dot-done      { background: #42b72a; }
+.dot-cancelled { background: #e41e3f; }
+
+.progress-slim { height: 5px; border-radius: 999px; }

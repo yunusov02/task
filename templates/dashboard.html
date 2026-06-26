@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Дашборд — HR System{% endblock %}
+{% block page_title %}Дашборд{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{% if is_manager %}
+
+<!-- Welcome Banner -->
+<div class="welcome-banner mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <h4 class="mb-1">
+                Добро пожаловать, {{ request.user.full_name }}!
+            </h4>
+            <p class="mb-0 opacity-75">
+                Вот что происходит в вашей компании сегодня.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'employees:create' %}" class="btn btn-light btn-sm fw-600">
+                <i class="fas fa-user-plus me-1"></i>Добавить сотрудника
+            </a>
+            <a href="{% url 'tasks:create' %}" class="btn btn-warning btn-sm fw-600 text-white">
+                <i class="fas fa-plus me-1"></i>Создать задачу
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── Stat Cards Row ── -->
+<div class="row g-3 mb-4">
+    <!-- Total Employees -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card primary">
+            <div class="stat-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ total_employees }}</div>
+                <div class="stat-label">Активных сотрудников</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Tasks -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card warning">
+            <div class="stat-icon warning">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ task_stats.total }}</div>
+                <div class="stat-label">Всего задач</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card danger">
+            <div class="stat-icon danger">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ task_stats.in_progress }}</div>
+                <div class="stat-label">В работе</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Done -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card success">
+            <div class="stat-icon success">
+                <i class="fas fa-check-double"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ task_stats.done }}</div>
+                <div class="stat-label">Выполнено</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Second Row ── -->
+<div class="row g-4 mb-4">
+
+    <!-- Task Status Breakdown -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-chart-pie me-2 text-primary"></i>Статусы задач
+            </div>
+            <div class="card-body">
+
+                <!-- Created -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-600">
+                            <span class="dot dot-created me-1"></span>Создана
+                        </span>
+                        <span class="small text-muted">
+                            {{ task_stats.created }} / {{ task_stats.total }}
+                        </span>
+                    </div>
+                    <div class="progress progress-slim">
+                        <div class="progress-bar bg-primary"
+                             style="width:{% if task_stats.total %}{% widthratio task_stats.created task_stats.total 100 %}{% else %}0{% endif %}%">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- In Progress -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-600">
+                            <span class="dot dot-progress me-1"></span>В работе
+                        </span>
+                        <span class="small text-muted">
+                            {{ task_stats.in_progress }} / {{ task_stats.total }}
+                        </span>
+                    </div>
+                    <div class="progress progress-slim">
+                        <div class="progress-bar bg-warning"
+                             style="width:{% if task_stats.total %}{% widthratio task_stats.in_progress task_stats.total 100 %}{% else %}0{% endif %}%">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Done -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-600">
+                            <span class="dot dot-done me-1"></span>Выполнена
+                        </span>
+                        <span class="small text-muted">
+                            {{ task_stats.done }} / {{ task_stats.total }}
+                        </span>
+                    </div>
+                    <div class="progress progress-slim">
+                        <div class="progress-bar bg-success"
+                             style="width:{% if task_stats.total %}{% widthratio task_stats.done task_stats.total 100 %}{% else %}0{% endif %}%">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancelled -->
+                <div class="mb-0">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-600">
+                            <span class="dot dot-cancelled me-1"></span>Отменена
+                        </span>
+                        <span class="small text-muted">
+                            {{ task_stats.cancelled }} / {{ task_stats.total }}
+                        </span>
+                    </div>
+                    <div class="progress progress-slim">
+                        <div class="progress-bar bg-danger"
+                             style="width:{% if task_stats.total %}{% widthratio task_stats.cancelled task_stats.total 100 %}{% else %}0{% endif %}%">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary pills -->
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                    <span class="status-badge badge-created">
+                        <span class="dot dot-created"></span> Создана: {{ task_stats.created }}
+                    </span>
+                    <span class="status-badge badge-progress">
+                        <span class="dot dot-progress"></span> В работе: {{ task_stats.in_progress }}
+                    </span>
+                    <span class="status-badge badge-done">
+                        <span class="dot dot-done"></span> Готово: {{ task_stats.done }}
+                    </span>
+                    <span class="status-badge badge-cancelled">
+                        <span class="dot dot-cancelled"></span> Отменено: {{ task_stats.cancelled }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-tasks me-2 text-primary"></i>Последние задачи</span>
+                <a href="{% url 'tasks:list' %}" class="btn btn-outline-primary btn-sm">
+                    Все задачи <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Задача</th>
+                                <th>Сотрудник</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                                <th class="text-center">Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in recent_tasks %}
+                            <tr>
+                                <td>
+                                    <div class="fw-600 text-truncate text-max-180">
+                                        {{ task.title }}
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ task.description|truncatechars:40 }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if task.user %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="mini-avatar">
+                                                {{ task.user.full_name|first|upper }}
+                                            </div>
+                                            <span class="small">{{ task.user.full_name }}</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted small">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.status == 'CREATED' %}
+                                        <span class="status-badge badge-created">Создана</span>
+                                    {% elif task.status == 'IN_PROGRESS' %}
+                                        <span class="status-badge badge-progress">В работе</span>
+                                    {% elif task.status == 'DONE' %}
+                                        <span class="status-badge badge-done">Выполнена</span>
+                                    {% else %}
+                                        <span class="status-badge badge-cancelled">Отменена</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-muted small">
+                                    {{ task.created_at|date:"d.m.Y" }}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'tasks:edit' task.pk %}"
+                                       class="btn-icon bg-light text-warning"
+                                       title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="fas fa-clipboard fa-2x mb-2 d-block opacity-25"></i>
+                                    Задач пока нет
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Quick Actions ── -->
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bolt me-2 text-warning"></i>Быстрые действия
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6 col-lg-3">
+                        <a href="{% url 'employees:create' %}" class="quick-action-card">
+                            <div class="qa-icon primary">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="qa-label">Добавить сотрудника</div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <a href="{% url 'tasks:create' %}" class="quick-action-card">
+                            <div class="qa-icon success">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="qa-label">Создать задачу</div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <a href="{% url 'employees:list' %}" class="quick-action-card">
+                            <div class="qa-icon warning">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="qa-label">Список сотрудников</div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <a href="{% url 'tasks:list' %}" class="quick-action-card">
+                            <div class="qa-icon danger">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="qa-label">Все задачи</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% else %}
+
+<!-- Welcome Banner -->
+<div class="welcome-banner mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <div class="user-avatar-lg">
+            {{ request.user.full_name|first|upper }}
+        </div>
+        <div>
+            <h4 class="mb-1">Привет, {{ request.user.full_name }}!</h4>
+            <p class="mb-0 opacity-75">
+                <i class="fas fa-briefcase me-1"></i>
+                {{ request.user.get_role_display }} &nbsp;·&nbsp;
+                <i class="fas fa-envelope me-1"></i>
+                {{ request.user.email }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Employee Stat Cards ── -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card primary">
+            <div class="stat-icon primary">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ my_stats.total }}</div>
+                <div class="stat-label">Всего задач</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card warning">
+            <div class="stat-icon warning">
+                <i class="fas fa-circle-notch"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ my_stats.created }}</div>
+                <div class="stat-label">Ожидают</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card danger">
+            <div class="stat-icon danger">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ my_stats.in_progress }}</div>
+                <div class="stat-label">В работе</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card success">
+            <div class="stat-icon success">
+                <i class="fas fa-check-double"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ my_stats.done }}</div>
+                <div class="stat-label">Выполнено</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── My Tasks Table ── -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-tasks me-2 text-primary"></i>Мои задачи</span>
+        <a href="{% url 'tasks:list' %}" class="btn btn-outline-primary btn-sm">
+            Все задачи <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Задача</th>
+                        <th>Статус</th>
+                        <th>Создана</th>
+                        <th class="text-center">Изменить статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in my_tasks %}
+                    <tr>
+                        <td class="text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="fw-600">{{ task.title }}</div>
+                            <small class="text-muted">
+                                {{ task.description|truncatechars:60 }}
+                            </small>
+                        </td>
+                        <td>
+                            {% if task.status == 'CREATED' %}
+                                <span class="status-badge badge-created">Создана</span>
+                            {% elif task.status == 'IN_PROGRESS' %}
+                                <span class="status-badge badge-progress">В работе</span>
+                            {% elif task.status == 'DONE' %}
+                                <span class="status-badge badge-done">Выполнена</span>
+                            {% else %}
+                                <span class="status-badge badge-cancelled">Отменена</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">
+                            {{ task.created_at|date:"d.m.Y" }}
+                        </td>
+                        <td class="text-center">
+                            <!-- Quick status change for employee -->
+                            <div class="d-flex justify-content-center gap-1 flex-wrap">
+                                {% if task.status != 'IN_PROGRESS' and task.status != 'DONE' %}
+                                <form method="POST"
+                                      action="{% url 'tasks:change_status' task.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="IN_PROGRESS">
+                                    <button type="submit"
+                                            class="btn btn-sm badge-progress border-0"
+                                            title="Взять в работу">
+                                        <i class="fas fa-play me-1"></i>В работу
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if task.status == 'IN_PROGRESS' %}
+                                <form method="POST"
+                                      action="{% url 'tasks:change_status' task.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="DONE">
+                                    <button type="submit"
+                                            class="btn btn-sm badge-done border-0"
+                                            title="Завершить">
+                                        <i class="fas fa-check me-1"></i>Готово
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if task.status == 'DONE' %}
+                                <span class="text-success small fw-600">
+                                    <i class="fas fa-check-circle me-1"></i>Завершена
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fas fa-clipboard fa-2x mb-2 d-block opacity-25"></i>
+                            У вас пока нет задач
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

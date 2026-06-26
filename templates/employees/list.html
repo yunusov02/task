@@ -9,7 +9,7 @@
         <div class="stat-card primary">
             <div class="stat-icon primary"><i class="fas fa-users"></i></div>
             <div>
-                <div class="stat-value">{{ employees.count }}</div>
+                <div class="stat-value">{{ total|default:0 }}</div>
                 <div class="stat-label">Всего сотрудников</div>
             </div>
         </div>
@@ -27,8 +27,8 @@
         <div class="stat-card warning">
             <div class="stat-icon warning"><i class="fas fa-briefcase"></i></div>
             <div>
-                <div class="stat-value">{{ departments_count|default:0 }}</div>
-                <div class="stat-label">Должностей</div>
+                <div class="stat-value">{{ manager_count|default:0 }}</div>
+                <div class="stat-label">Менеджеров</div>
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@
     </div>
     <div class="card-body p-0">
         <!-- Search/Filter Bar -->
-        <div class="p-3 border-bottom">
+        <div class="filter-bar">
             <form method="GET" class="row g-2">
                 <div class="col-md-5">
                     <div class="input-group">
@@ -70,14 +70,21 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <select name="position" class="form-select">
-                        <option value="">Все должности</option>
-                        {% for pos in positions %}
-                            <option value="{{ pos }}"
-                                {% if request.GET.position == pos %}selected{% endif %}>
-                                {{ pos }}
+                    <select name="role" class="form-select">
+                        <option value="">Все роли</option>
+                        {% for value, label in roles %}
+                            <option value="{{ value }}"
+                                {% if role_filter == value %}selected{% endif %}>
+                                {{ label }}
                             </option>
                         {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="active" class="form-select">
+                        <option value="">Любой статус</option>
+                        <option value="1" {% if active_filter == "1" %}selected{% endif %}>Активные</option>
+                        <option value="0" {% if active_filter == "0" %}selected{% endif %}>Отключенные</option>
                     </select>
                 </div>
                 <div class="col-auto">
@@ -98,11 +105,11 @@
                     <tr>
                         <th>#</th>
                         <th>Сотрудник</th>
-                        <th>Должность</th>
+                        <th>Роль</th>
                         <th>Телефон</th>
                         <th>Email</th>
                         <th>Зарплата</th>
-                        <th>Дата приема</th>
+                        <th>Статус</th>
                         <th class="text-center">Действия</th>
                     </tr>
                 </thead>
@@ -112,11 +119,7 @@
                         <td class="text-muted">{{ forloop.counter }}</td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <div style="
-                                    width:36px;height:36px;border-radius:50%;
-                                    background:linear-gradient(135deg,#4f46e5,#7c3aed);
-                                    display:flex;align-items:center;justify-content:center;
-                                    color:#fff;font-weight:700;font-size:0.85rem;flex-shrink:0;">
+                                <div class="avatar">
                                     {{ emp.full_name|first|upper }}
                                 </div>
                                 <div>
@@ -127,17 +130,23 @@
                         </td>
                         <td>
                             <span class="badge bg-light text-dark border">
-                                {{ emp.position }}
+                                {{ emp.get_role_display }}
                             </span>
                         </td>
-                        <td>{{ emp.phone|default:"—" }}</td>
+                        <td>{{ emp.phone_number|default:"—" }}</td>
                         <td>{{ emp.email }}</td>
                         <td>
                             <span class="fw-600 text-success">
-                                {{ emp.salary|floatformat:0 }} ₽
+                                {{ emp.salary|floatformat:0 }} UZS
                             </span>
                         </td>
-                        <td>{{ emp.hire_date|date:"d.m.Y" }}</td>
+                        <td>
+                            {% if emp.is_active %}
+                                <span class="status-badge badge-done">Активен</span>
+                            {% else %}
+                                <span class="status-badge badge-cancelled">Отключен</span>
+                            {% endif %}
+                        </td>
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-1">
                                 <a href="{% url 'employees:detail' emp.pk %}"
@@ -211,9 +220,7 @@
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 shadow">
             <div class="modal-body text-center p-4">
-                <div style="width:56px;height:56px;background:#fee2e2;border-radius:50%;
-                            display:flex;align-items:center;justify-content:center;
-                            margin:0 auto 14px;font-size:1.4rem;color:#ef4444;">
+                <div class="danger-modal-icon">
                     <i class="fas fa-trash"></i>
                 </div>
                 <h6 class="fw-700 mb-1">Удалить сотрудника?</h6>
