@@ -4,6 +4,8 @@ from apps.users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(read_only=True)
+
     class Meta:
         model = User
         fields = [
@@ -37,6 +39,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserReadSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(read_only=True)
+
     class Meta:
         model = User
         fields = ["id", "full_name", "email", "role"]
