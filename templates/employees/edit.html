@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Редактировать сотрудника - Task Manager{% endblock %}
+{% block page_title %}Редактировать сотрудника{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'employees:list' %}" class="text-decoration-none">Сотрудники</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'employees:detail' employee.pk %}" class="text-decoration-none">
+                        {{ employee.full_name }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">Редактировать</li>
+            </ol>
+        </nav>
+
+        <div class="card form-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-user-edit me-2 text-warning"></i>Данные сотрудника</span>
+                <span class="badge bg-secondary">ID: {{ employee.pk }}</span>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{% url 'employees:edit' employee.pk %}" novalidate>
+                    {% csrf_token %}
+
+                    <div class="section-label">
+                        <i class="fas fa-id-card me-1"></i>Личная информация
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.last_name.id_for_label }}">Фамилия</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}<div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.first_name.id_for_label }}">Имя</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}<div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="section-label">
+                        <i class="fas fa-address-book me-1"></i>Контакты и роль
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.phone_number.id_for_label }}">Телефон</label>
+                            {{ form.phone_number }}
+                            {% if form.phone_number.errors %}<div class="invalid-feedback d-block">{{ form.phone_number.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.role.id_for_label }}">Роль</label>
+                            {{ form.role }}
+                            {% if form.role.errors %}<div class="invalid-feedback d-block">{{ form.role.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.salary.id_for_label }}">Зарплата</label>
+                            {{ form.salary }}
+                            {% if form.salary.errors %}<div class="invalid-feedback d-block">{{ form.salary.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Активный сотрудник</label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{% url 'employees:detail' employee.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Отмена
+                        </a>
+                        <button type="submit" class="btn btn-warning text-white">
+                            <i class="fas fa-save me-1"></i>Обновить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

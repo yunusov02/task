@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Редактировать задачу - Task Manager{% endblock %}
+{% block page_title %}Редактировать задачу{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-7">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'tasks:list' %}" class="text-decoration-none">Задачи</a>
+                </li>
+                <li class="breadcrumb-item active">{{ task.title }}</li>
+            </ol>
+        </nav>
+
+        <div class="card form-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-edit me-2 text-warning"></i>Данные задачи</span>
+                <span class="status-badge {% if task.status == 'DONE' %}badge-done{% elif task.status == 'IN_PROGRESS' %}badge-progress{% elif task.status == 'CANCELLED' %}badge-cancelled{% else %}badge-created{% endif %}">
+                    {{ task.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{% url 'tasks:edit' task.pk %}" novalidate>
+                    {% csrf_token %}
+
+                    {% if is_manager %}
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.title.id_for_label }}">Название задачи</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}<div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.description.id_for_label }}">Описание</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.user.id_for_label }}">Назначить сотруднику</label>
+                                {{ form.user }}
+                                {% if form.user.errors %}<div class="invalid-feedback d-block">{{ form.user.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.status.id_for_label }}">Статус</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}<div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="task-readonly mb-4">
+                            <h5>{{ task.title }}</h5>
+                            <p>{{ task.description }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label" for="{{ form.status.id_for_label }}">Статус</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}<div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>{% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{% url 'tasks:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Сохранить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
