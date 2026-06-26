@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация — HR System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block auth_content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo"><i class="fas fa-user-plus"></i></div>
+            <h3>Создать аккаунт</h3>
+            <p>Заполните форму для регистрации</p>
+        </div>
+
+        {% if form.errors %}
+            <div class="alert alert-danger mb-3">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Пожалуйста, исправьте ошибки ниже.
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'auth:register' %}">
+            {% csrf_token %}
+
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <label class="form-label">Имя</label>
+                    <input
+                        type="text"
+                        name="first_name"
+                        class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                        placeholder="Иван"
+                        value="{{ form.first_name.value|default:'' }}"
+                        required
+                    >
+                    {% if form.first_name.errors %}
+                        <div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Фамилия</label>
+                    <input
+                        type="text"
+                        name="last_name"
+                        class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                        placeholder="Иванов"
+                        value="{{ form.last_name.value|default:'' }}"
+                        required
+                    >
+                    {% if form.last_name.errors %}
+                        <div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Имя пользователя</label>
+                <div class="input-group-icon">
+                    <i class="fas fa-user icon"></i>
+                    <input
+                        type="text"
+                        name="username"
+                        class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                        placeholder="username"
+                        value="{{ form.username.value|default:'' }}"
+                        required
+                    >
+                </div>
+                {% if form.username.errors %}
+                    <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <div class="input-group-icon">
+                    <i class="fas fa-envelope icon"></i>
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                        placeholder="example@mail.ru"
+                        value="{{ form.email.value|default:'' }}"
+                        required
+                    >
+                </div>
+                {% if form.email.errors %}
+                    <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Пароль</label>
+                <div class="input-group-icon">
+                    <i class="fas fa-lock icon"></i>
+                    <input
+                        type="password"
+                        name="password1"
+                        class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                        placeholder="Минимум 8 символов"
+                        id="password1"
+                        oninput="checkStrength(this.value)"
+                        required
+                    >
+                </div>
+                {% if form.password1.errors %}
+                    <div class="invalid-feedback">{{ form.password1.errors.0 }}</div>
+                {% endif %}
+                <div class="password-strength mt-2">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strengthFill"></div>
+                    </div>
+                    <small id="strengthText" class="text-muted"></small>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Подтвердите пароль</label>
+                <div class="input-group-icon">
+                    <i class="fas fa-lock icon"></i>
+                    <input
+                        type="password"
+                        name="password2"
+                        class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                        placeholder="Повторите пароль"
+                        required
+                    >
+                </div>
+                {% if form.password2.errors %}
+                    <div class="invalid-feedback">{{ form.password2.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="auth-btn">
+                <i class="fas fa-user-check me-2"></i>Зарегистрироваться
+            </button>
+        </form>
+
+        <p class="text-center text-muted mt-4 mb-0" style="font-size:0.88rem;">
+            Уже есть аккаунт?
+            <a href="{% url 'auth:login' %}" class="auth-link">Войти</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    function checkStrength(val) {
+        const fill = document.getElementById('strengthFill');
+        const text = document.getElementById('strengthText');
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val))  score++;
+        if (/[0-9]/.test(val))  score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        const levels = [
+            { w: '0%',   c: '',          t: '' },
+            { w: '25%',  c: '#ef4444',   t: 'Слабый' },
+            { w: '50%',  c: '#f59e0b',   t: 'Средний' },
+            { w: '75%',  c: '#3b82f6',   t: 'Хороший' },
+            { w: '100%', c: '#10b981',   t: 'Отличный' },
+        ];
+        fill.style.width      = levels[score].w;
+        fill.style.background = levels[score].c;
+        text.textContent      = levels[score].t;
+        text.style.color      = levels[score].c;
+    }
+</script>
+{% endblock %}
